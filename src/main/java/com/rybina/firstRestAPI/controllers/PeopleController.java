@@ -7,6 +7,7 @@ import com.rybina.firstRestAPI.util.PersonErrorResponse;
 import com.rybina.firstRestAPI.util.PersonNotCreatedException;
 import com.rybina.firstRestAPI.util.PersonNotFoundException;
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,26 +17,29 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/people")
 public class PeopleController {
 
     private final PeopleService peopleService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public PeopleController(PeopleService peopleService) {
+    public PeopleController(PeopleService peopleService, ModelMapper modelMapper) {
         this.peopleService = peopleService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping()
-    public List<Person> getPeople() {
-        return peopleService.findAll(); // Jackson конвертирует эти объекты в JSON
+    public List<PersonDTO> getPeople() {
+        return peopleService.findAll().stream().map(this::convertToPersonDTO).collect(Collectors.toList()); // Jackson конвертирует эти объекты в JSON
     }
 
     @GetMapping("/{id}")
-    public Person getPerson(@PathVariable("id") int id) {
-        return peopleService.findOne(id); // Jackson конвертирует в JSON
+    public PersonDTO getPerson(@PathVariable("id") int id) {
+        return convertToPersonDTO(peopleService.findOne(id)); // Jackson конвертирует в JSON
     }
 
     @PostMapping
@@ -74,12 +78,10 @@ public class PeopleController {
     }
 
     public Person convertToPerson(PersonDTO p) {
-        Person person = new Person();
+        return modelMapper.map(p, Person.class);
+    }
 
-        person.setName(p.getName());
-        person.setAge(p.getAge());
-        person.setEmail(p.getEmail());
-
-        return person;
+    private PersonDTO convertToPersonDTO(Person p) {
+        return modelMapper.map( p, PersonDTO.class);
     }
 }
