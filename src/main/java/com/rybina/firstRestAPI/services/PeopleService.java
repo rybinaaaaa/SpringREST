@@ -1,5 +1,6 @@
 package com.rybina.firstRestAPI.services;
 
+import com.rybina.firstRestAPI.dto.PersonDTO;
 import com.rybina.firstRestAPI.models.Person;
 import com.rybina.firstRestAPI.repositories.PeopleRepository;
 import com.rybina.firstRestAPI.util.PersonNotFoundException;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +34,13 @@ public class PeopleService {
 
     @Transactional
     public void save(Person person) {
+        enrichPerson(person);
         peopleRepository.save(person);
+    }
+
+    private void enrichPerson(Person person) {
+        person.setCreatedAt(LocalDateTime.now());
+        person.setUpdatedAt(LocalDateTime.now());
+        person.setCreatedWho("ADMIN");
     }
 }

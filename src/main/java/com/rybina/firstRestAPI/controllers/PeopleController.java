@@ -1,5 +1,6 @@
 package com.rybina.firstRestAPI.controllers;
 
+import com.rybina.firstRestAPI.dto.PersonDTO;
 import com.rybina.firstRestAPI.models.Person;
 import com.rybina.firstRestAPI.services.PeopleService;
 import com.rybina.firstRestAPI.util.PersonErrorResponse;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -37,7 +39,7 @@ public class PeopleController {
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> create(@RequestBody @Valid Person person, BindingResult bindingResult) {
+    public ResponseEntity<HttpStatus> create(@RequestBody @Valid PersonDTO person, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             StringBuilder errorMsg = new StringBuilder();
 
@@ -51,7 +53,7 @@ public class PeopleController {
 
             throw new PersonNotCreatedException(errorMsg.toString());
         }
-        peopleService.save(person);
+        peopleService.save(convertToPerson(person));
 
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -69,5 +71,15 @@ public class PeopleController {
         PersonErrorResponse response = new PersonErrorResponse("Person wasn't created",
                 System.currentTimeMillis());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    public Person convertToPerson(PersonDTO p) {
+        Person person = new Person();
+
+        person.setName(p.getName());
+        person.setAge(p.getAge());
+        person.setEmail(p.getEmail());
+
+        return person;
     }
 }
